@@ -22,12 +22,14 @@ export async function generateTelesignValidatedCSV(validatedResults) {
   const csv = json2csvParser.parse(validatedResults);
 
   // Ensure downloads folder exists
-  const downloadsDir = path.join(process.cwd(), 'downloads');
-  if (!fs.existsSync(downloadsDir)) {
-    fs.mkdirSync(downloadsDir);
-  }
+  // const downloadsDir = path.join(process.cwd(), 'downloads');
+  // if (!fs.existsSync(downloadsDir)) {
+  //   fs.mkdirSync(downloadsDir);
+  // }
 
   // Create a timestamped filename
+  const tmpDir = "/tmp"
+  const downloadsDir = path.join(tmpDir, "downloads")
   const filename = `validated_contacts_${Date.now()}.csv`;
   const filePath = path.join(downloadsDir, filename);
 
