@@ -9,9 +9,6 @@ const app = express();
 app.use(express.json());
 app.use("/api", telesignRoutes);
 
-// Serve CSV files publicly
-app.use('/downloads', express.static(path.join(process.cwd(), 'downloads')));
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
