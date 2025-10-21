@@ -2,9 +2,11 @@ import pLimit from "p-limit";
 
 import { parseCSV } from "../utils/csvParser.js";
 import { sanitizeRow } from "../utils/csvSanitizer.js";
+import { generateTelesignValidatedCSV } from '../utils/csvGenerator.js';
 
 import { telesignService } from "./telesignService.js";
 import { dbService } from "./dbService.js";
+
 
 /**
  * Process a CSV file in controlled concurrent batches.
@@ -63,6 +65,9 @@ export async function processCSV(filePath, options = {}) {
     // Get total number of telesign validated contacts
     const validatedContacts = results.filter((contact) => contact.api_valid)
 
+    // Generate CSV, get download link
+    const downloadPath = await generateTelesignValidatedCSV(validatedContacts)
+
     return {
       success: true,
       total: data.length,
@@ -70,6 +75,7 @@ export async function processCSV(filePath, options = {}) {
       validated: validatedContacts.length,
       invalid: invalid.length,
       low_risk: lowRisks.length,
+      download: downloadPath,
       saved: saveResult
       // results,
       // invalid,
@@ -289,6 +295,8 @@ export async function validatePhoneRow(row, includeLiveStatus = false) {
     email: row.email || "",
     company: row.company || "",
     title: row.title || "",
+    website: row.website || "", 
+    linkedin_url: row.linkedin_url || "",
     api_valid,
     api_status,
     carrier: carrier_info,

@@ -8,6 +8,8 @@ CREATE TABLE contacts (
   company TEXT,
   title TEXT,
   industry TEXT,
+  linkedin_url TEXT,
+  website TEXT,
   
   -- Phone Intelligence Data
   carrier TEXT,

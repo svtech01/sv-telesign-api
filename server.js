@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from 'path';
 import telesignRoutes from "./src/routes/telesignRoutes.js";
 
 dotenv.config();
@@ -7,6 +8,9 @@ const app = express();
 
 app.use(express.json());
 app.use("/api", telesignRoutes);
+
+// Serve CSV files publicly
+app.use('/downloads', express.static(path.join(process.cwd(), 'downloads')));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

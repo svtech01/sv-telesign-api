@@ -1,6 +1,5 @@
 import express from "express";
 import multer from "multer";
-import pLimit from "p-limit";
 import fs from "fs";
 
 // Utils and Services
@@ -26,7 +25,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       append: req.body?.clear_previous
     });
 
-     fs.unlink(req.file.path, () => {});
+    fs.unlink(req.file.path, () => {});
 
     res.json(result);
 

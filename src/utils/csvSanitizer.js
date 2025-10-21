@@ -7,8 +7,10 @@ const SEAMLESS_MAPPING = {
   first_name: ["First Name", "first_name"],
   last_name: ["Last Name", "last_name"],
   email: ["Email 1", "email", "email_1"],
-  company: ["Company Name - Cleaned", "company_name", "company"],
+  company: ["Company Name - Cleaned", "Company Name", "company_name", "company"],
   title: ["Title", "job_title", "title"],
+  website: ["Website", "website", "site"],
+  linkedin_url: ["Contact LI Profile URL", "LinkedIn Profile URL"],
   phone_number: [
     "Contact Phone 1",
     "Contact Mobile Phone",
@@ -80,6 +82,8 @@ export function sanitizeRow(row) {
     title: mapped.title || "",
     company: mapped.company || "",
     email: mapped.email || "",
+    website: mapped.website || "",
+    linkedin_url: mapped.linkedin_url || "",
     phone: normalizedPhone,
   };
 }
