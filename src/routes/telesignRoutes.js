@@ -7,7 +7,7 @@ import { telesignService } from "../services/telesignService.js";
 import { processCSV } from "../services/telesignProcessor.js";
 
 const router = express.Router();
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "/tmp/uploads/" });
 
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
