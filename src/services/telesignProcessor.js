@@ -66,7 +66,7 @@ export async function processCSV(filePath, options = {}) {
     const validatedContacts = results.filter((contact) => contact.api_valid)
 
     // Generate CSV, get download link
-    const downloadPath = await generateTelesignValidatedCSV(validatedContacts)
+    const csvFile = await generateTelesignValidatedCSV(validatedContacts)
 
     return {
       success: true,
@@ -75,7 +75,7 @@ export async function processCSV(filePath, options = {}) {
       validated: validatedContacts.length,
       invalid: invalid.length,
       low_risk: lowRisks.length,
-      download: downloadPath,
+      download: csvFile,
       saved: saveResult
       // results,
       // invalid,

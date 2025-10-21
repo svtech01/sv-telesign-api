@@ -47,7 +47,10 @@ export async function generateTelesignValidatedCSV(validatedResults) {
       .from("exports")
       .getPublicUrl(filename);
 
-    return publicUrlData.publicUrl
+    return {
+      downloadUrl: publicUrlData.publicUrl,
+      fileName: filename
+    }
     
   } catch (error) {
     console.error("Error writing CSV file:", err);
