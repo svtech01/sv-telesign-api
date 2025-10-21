@@ -1,11 +1,11 @@
 import express from "express";
 import multer from "multer";
 import pLimit from "p-limit";
+import fs from "fs";
 
 // Utils and Services
-import { parseCSV } from "../utils/csvParser.js";
-import { sanitizeRow } from "../utils/csvSanitizer.js";
 import { telesignService } from "../services/telesignService.js";
+import { processCSV } from "../services/telesignProcessor.js";
 
 // Models
 import { Contact } from "../models/Contact.js";
@@ -18,15 +18,23 @@ const upload = multer({ dest: "uploads/" });
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
 
-    
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
 
-    const result = await processCSVWithBatching(req.file.path, {
+    const result = await processCSV(req.file.path, {
       concurrency: 10,
       delayMs: 100,
-      batchSize: 50,
+      batchSize: req.body?.validation_limit || 50,
+      mode: req.body?.validation_mode || 'real',
+      liveStatus: req.body?.live_status,
+      append: req.body?.append
     });
 
+     fs.unlink(req.file.path, () => {});
+
     res.json(result);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, error: err.message });
