@@ -12,15 +12,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.76.1",
     "axios": "^1.12.2",
     "csv-parser": "^3.2.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "libphonenumber-js": "^1.12.24",
     "multer": "^2.0.2",
-    "p-limit": "^7.2.0",
-    "sequelize": "^6.37.7",
-    "sqlite3": "^5.1.7"
+    "p-limit": "^7.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

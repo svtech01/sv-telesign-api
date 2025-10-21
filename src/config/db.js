@@ -1,7 +1,7 @@
-import { Sequelize } from "sequelize";
-import dotenv from "dotenv";
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 dotenv.config();
 
-export const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  logging: false,
-});
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // for server-side
+export const supabase = createClient(supabaseUrl, supabaseKey);
