@@ -1,49 +1,67 @@
 import { Parser } from 'json2csv';
 import fs from 'fs';
 import path from 'path';
-import { put } from "@vercel/blob";
 
 export async function generateTelesignValidatedCSV(validatedResults) {
   if (!validatedResults || validatedResults.length === 0) {
     throw new Error('No validated results found');
   }
 
-  const fields = [
-    { label: 'First Name', value: 'first_name' },
-    { label: 'Last Name', value: 'last_name' },
-    { label: 'Title', value: 'title' },
-    { label: 'Company Name', value: 'company' },
-    { label: 'Website', value: 'website' },
-    { label: 'LinkedIn Profile URL', value: 'linkedin_url' },
-    { label: 'Email', value: 'email' },
-    { label: 'Contact Mobile Phone', value: 'phone_e164' }
-  ]
+  try {
 
-  const json2csvParser = new Parser({ fields });
-  const csv = json2csvParser.parse(validatedResults);
+    const fields = [
+      { label: 'First Name', value: 'first_name' },
+      { label: 'Last Name', value: 'last_name' },
+      { label: 'Title', value: 'title' },
+      { label: 'Company Name', value: 'company' },
+      { label: 'Website', value: 'website' },
+      { label: 'LinkedIn Profile URL', value: 'linkedin_url' },
+      { label: 'Email', value: 'email' },
+      { label: 'Contact Mobile Phone', value: 'phone_e164' }
+    ]
 
-  // Ensure downloads folder exists
-  // const downloadsDir = path.join(process.cwd(), 'downloads');
-  // if (!fs.existsSync(downloadsDir)) {
-  //   fs.mkdirSync(downloadsDir);
-  // }
+    const json2csvParser = new Parser({ fields });
+    const csv = json2csvParser.parse(validatedResults);
 
-  // Create a timestamped filename
-  // const tmpDir = "/tmp"
-  // const downloadsDir = path.join(tmpDir, "downloads")
-  const filename = `validated_contacts_${Date.now()}.csv`;
-  // const filePath = path.join(downloadsDir, filename);
+    if(process.env.ENVIRONMENT == "local") {
+      // Ensure downloads folder exists
+      const downloadsDir = path.join(process.cwd(), 'downloads');
+      if (!fs.existsSync(downloadsDir)) {
+        fs.mkdirSync(downloadsDir);
+      }
 
-  // // Write file to disk
-  // fs.writeFileSync(filePath, csv, 'utf8');
+      // Create a timestamped filename
+      const filename = `validated_contacts_${Date.now()}.csv`;
+      const filePath = path.join(downloadsDir, filename);
 
-  // Upload CSV as a Blob
-  const blob = await put(filename, Buffer.from(csv), {
-    access: "public",
-    contentType: "text/csv",
-  });
+      // // Write file to disk
+      fs.writeFileSync(filePath, csv, 'utf8');
+      return `/downloads/${filename}`;
+    
+    } else if(process.env.ENVIRONMENT == "staging") {
 
-  // Return the relative file path for download
-  // return `/downloads/${filename}`;
-  return blob.url
+      // Use Vercel’s writable tmp directory
+      const tmpDir = "/tmp";
+
+      // Ensure the /tmp directory exists (safe even if already present)
+      if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir, { recursive: true });
+      }
+
+      // Create a timestamped filename
+      const filename = `validated_contacts_${Date.now()}.csv`;
+      const filePath = path.join(tmpDir, filename);
+
+      fs.writeFileSync(filePath, csv, "utf8");
+
+      // Return the relative file path for download
+      return `/downloads/${filename}`;
+
+    }
+    
+  } catch (error) {
+    console.error("Error writing CSV file:", err);
+    throw err;
+  }
+
 }
