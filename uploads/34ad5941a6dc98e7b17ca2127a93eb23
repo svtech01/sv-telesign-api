@@ -1,0 +1,4 @@
+phone_number,first_name,last_name,email,company,title,industry
++1-555-123-4567,John,Doe,john.doe@example.com,TechCorp,Software Engineer,Technology
++1-555-987-6543,Jane,Smith,jane.smith@company.com,FinanceInc,Account Manager,Finance
++1-555-246-8135,Bob,Johnson,bob@startup.io,Startup LLC,CEO,Startup
