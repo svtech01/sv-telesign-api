@@ -1,6 +1,7 @@
 import { Parser } from 'json2csv';
 import fs from 'fs';
 import path from 'path';
+import { put } from "@vercel/blob";
 
 export async function generateTelesignValidatedCSV(validatedResults) {
   if (!validatedResults || validatedResults.length === 0) {
@@ -28,14 +29,21 @@ export async function generateTelesignValidatedCSV(validatedResults) {
   // }
 
   // Create a timestamped filename
-  const tmpDir = "/tmp"
-  const downloadsDir = path.join(tmpDir, "downloads")
+  // const tmpDir = "/tmp"
+  // const downloadsDir = path.join(tmpDir, "downloads")
   const filename = `validated_contacts_${Date.now()}.csv`;
-  const filePath = path.join(downloadsDir, filename);
+  // const filePath = path.join(downloadsDir, filename);
 
-  // Write file to disk
-  fs.writeFileSync(filePath, csv, 'utf8');
+  // // Write file to disk
+  // fs.writeFileSync(filePath, csv, 'utf8');
+
+  // Upload CSV as a Blob
+  const blob = await put(filename, Buffer.from(csv), {
+    access: "public",
+    contentType: "text/csv",
+  });
 
   // Return the relative file path for download
-  return `/downloads/${filename}`;
+  // return `/downloads/${filename}`;
+  return blob.url
 }
