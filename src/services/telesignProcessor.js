@@ -4,6 +4,7 @@ import { parseCSV } from "../utils/csvParser.js";
 import { sanitizeRow } from "../utils/csvSanitizer.js";
 
 import { telesignService } from "./telesignService.js";
+import { dbService } from "./dbService.js";
 
 /**
  * Process a CSV file in controlled concurrent batches.
@@ -13,6 +14,7 @@ import { telesignService } from "./telesignService.js";
  * @returns {Promise<object>} summary of results
  */
 export async function processCSV(filePath, options = {}) {
+
   const {
     concurrency = 10,  // how many parallel requests
     delayMs = 200,     // optional delay between batches
@@ -29,7 +31,7 @@ export async function processCSV(filePath, options = {}) {
     const data = await parseCSV(filePath);
 
     let results = [];
-    let invalids = [];
+    let invalid = [];
 
     console.log(`🧩 Parsed ${data.length} rows from CSV`);
 
@@ -39,7 +41,7 @@ export async function processCSV(filePath, options = {}) {
 
       if(processor){
         results = processor.results
-        invalids = processor.invalid
+        invalid = processor.invalid
       }
 
     } else {
@@ -48,17 +50,29 @@ export async function processCSV(filePath, options = {}) {
 
       if(processor){
         results = processor.results
-        invalids = processor.invalid
+        invalid = processor.invalid
       }
     }
+
+    // Save processed data to database
+    const saveResult = await dbService.saveContactsBatch(results)
+
+    // Get total number of contacts with low risk level (high validity)
+    const lowRisks = results.filter((contact) => contact.risk_level == "low" && contact.api_valid)
+
+    // Get total number of telesign validated contacts
+    const validatedContacts = results.filter((contact) => contact.api_valid)
 
     return {
       success: true,
       total: data.length,
       processed: results.length,
-      invalids: invalids.length,
-      results,
-      // invalids,
+      validated: validatedContacts.length,
+      invalid: invalid.length,
+      low_risk: lowRisks.length,
+      saved: saveResult
+      // results,
+      // invalid,
     };
 
   } catch (err) {
