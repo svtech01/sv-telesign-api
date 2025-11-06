@@ -67,7 +67,7 @@ router.post("/verify-otp", async (req, res) => {
   try {
     const { attemptId, code } = req.body;
 
-    if (!attemptId) return res.status(404).json({ error: "Attempt not found" });
+    if (!attemptId) return res.status(404).json({ error: "Attempt not found..." });
 
     const result = await telesignService.verifyOtp(attempt.telesignReferenceId, code);
 
