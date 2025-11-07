@@ -7,16 +7,17 @@ import { telesignService } from "../services/telesignService.js";
 import { processCSV } from "../services/telesignProcessor.js";
 
 const router = express.Router();
-const upload = multer({ dest: "/tmp/uploads/" });
 
-router.post("/upload", upload.single("file"), async (req, res) => {
+router.post("/upload", async (req, res) => {
   try {
 
-    if (!req.file) {
+    console.log("Request body: ", req.body)
+
+    if (!req.body?.fileUrl) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const result = await processCSV(req.file.path, {
+    const result = await processCSV(req.body.fileUrl, {
       concurrency: 10,
       delayMs: 100,
       batchSize: req.body?.validation_limit || 50,
@@ -24,8 +25,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       liveStatus: req.body?.live_status,
       append: req.body?.clear_previous
     });
-
-    fs.unlink(req.file.path, () => {});
 
     res.json(result);
 

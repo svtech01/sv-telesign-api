@@ -7,7 +7,6 @@ import { generateTelesignValidatedCSV } from '../utils/csvGenerator.js';
 import { telesignService } from "./telesignService.js";
 import { dbService } from "./dbService.js";
 
-
 /**
  * Process a CSV file in controlled concurrent batches.
  *
@@ -30,7 +29,10 @@ export async function processCSV(filePath, options = {}) {
 
     console.log("Validation Limit:", batchSize)
     
-    const data = await parseCSV(filePath);
+    const data = await parseCSV(filePath, {
+      bucket: process.env.SUPABASE_STORAGE_BUCKET,
+      isSupabase: true
+    });
 
     let results = [];
     let invalid = [];
