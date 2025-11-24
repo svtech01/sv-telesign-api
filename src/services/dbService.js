@@ -124,11 +124,17 @@ export const dbService = {
         }));
 
         // Batch upsert with conflict handling
-        const { error } = await supabase
-          .from(tableName)
-          .upsert(contactsData, { onConflict: ["phone_number", "email"] });
+        // First upsert using phone_number conflict
+        let { error: phoneError } = await supabase
+          .from("contacts")
+          .upsert(uniqueResults, { onConflict: "phone_number" });
+        if (phoneError) throw phoneError;
 
-        if (error) throw error;
+        // Then upsert using email conflict
+        ({ error: emailError } = await supabase
+          .from("contacts")
+          .upsert(uniqueResults, { onConflict: "email" }));
+        if (emailError) throw emailError;
 
         totalSaved += contactsData.length;
         console.log(`✅ Saved batch ${i / chunkSize + 1}: ${contactsData.length} contacts`);
