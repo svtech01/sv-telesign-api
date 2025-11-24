@@ -16,10 +16,12 @@ import { dbService } from "./dbService.js";
  */
 export async function processCSV(filePath, options = {}) {
 
+  const thresholdForBatching = 100;
+
   const {
     concurrency = 10,  // how many parallel requests
     delayMs = 200,     // optional delay between batches
-    batchSize = 50,     // how many rows per batch commit
+    batchSize = 100,     // how many rows per batch commit
     mode = 'real',
     liveStatus = false,
     append = false
@@ -38,6 +40,11 @@ export async function processCSV(filePath, options = {}) {
     let invalid = [];
 
     console.log(`🧩 Parsed ${data.length} rows from CSV`);
+
+    if(data.length > thresholdForBatching && batchSize == "all") {
+      console.log("⚠️ Large dataset detected. Switching to batch processing mode.");
+      batchSize = thresholdForBatching; // reset to default batch size
+    }
 
     if(batchSize == "all") {
 
