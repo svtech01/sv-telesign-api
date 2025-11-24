@@ -56,7 +56,7 @@ export async function processCSV(filePath, options = {}) {
 
       console.log(" Processing data with batching ", batchSize, thresholdForBatching, data.length);
 
-      let processor = await processCSVWithBatching(data, {...options, concurrency, batchSize});
+      let processor = await processCSVWithBatching(data, {...options, concurrency, batchSize: thresholdForBatching});
 
       if(processor){
         results = processor.results
