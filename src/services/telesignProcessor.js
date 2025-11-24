@@ -266,9 +266,10 @@ export async function validatePhoneRow(row, includeLiveStatus = false) {
         const liveData = await telesignService.phoneIdLiveStatus(phoneE164);
 
         if (liveData && !liveData.error) {
-          const live = liveData.live || {};
-          const liveStatus = live.status || {};
+          const liveStatus = liveData.status || {};
           const liveStatusCode = liveStatus.code;
+
+          // console.log(`Live status for ${phoneE164}:`, liveStatus.code);
 
           is_reachable = liveStatusCode === 300;
 

@@ -1,5 +1,7 @@
 import { supabase } from "../config/db.js";
 
+const tableName = 'contacts'; //test_contacts for testing environment
+
 export const dbService = {
 
   async saveContact(result, commit = true) {
@@ -12,7 +14,7 @@ export const dbService = {
 
       // Check if contact exists
       const { data: existing, error: fetchError } = await supabase
-        .from('contacts')
+        .from(tableName)
         .select('*')
         .eq('phone_number', phone)
         .maybeSingle();
@@ -43,7 +45,7 @@ export const dbService = {
       if (existing) {
         // Update existing contact
         const { error: updateError } = await supabase
-          .from('contacts')
+          .from(tableName)
           .update(payload)
           .eq('id', existing.id);
 
@@ -54,7 +56,7 @@ export const dbService = {
         payload.created_at = new Date().toISOString();
 
         const { error: insertError } = await supabase
-          .from('contacts')
+          .from(tableName)
           .insert([payload]);
 
         if (insertError) throw insertError;
@@ -114,7 +116,7 @@ export const dbService = {
 
         // Batch upsert with conflict handling
         const { error } = await supabase
-          .from("contacts")
+          .from(tableName)
           .upsert(contactsData, { onConflict: "phone_number" });
 
         if (error) throw error;
