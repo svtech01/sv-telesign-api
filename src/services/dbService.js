@@ -16,7 +16,7 @@ export const dbService = {
       const { data: existing, error: fetchError } = await supabase
         .from(tableName)
         .select('*')
-        .eq('phone_number', phone)
+        .eq('phone_number_e164', phone)
         .maybeSingle();
 
       if (fetchError) throw fetchError;
@@ -131,9 +131,9 @@ export const dbService = {
         if (phoneError) throw phoneError;
 
         // Then upsert using email conflict
-        ({ error: emailError } = await supabase
+        let { error: emailError } = await supabase
           .from("contacts")
-          .upsert(contactsData, { onConflict: "email" }));
+          .upsert(contactsData, { onConflict: "email" });
         if (emailError) throw emailError;
 
         totalSaved += contactsData.length;
