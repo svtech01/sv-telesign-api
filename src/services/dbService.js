@@ -82,9 +82,18 @@ export const dbService = {
       let totalSaved = 0;
 
       // Remove duplicates based on phone_e164
-      const uniqueResults = Object.values(
+      const uniqueByPhone = Object.values(
         results.reduce((acc, item) => {
           acc[item.phone_e164] = item;
+          return acc;
+        }, {})
+      );
+
+      // Further remove duplicates based on email
+      const uniqueResults = Object.values(
+        uniqueByPhone.reduce((acc, item) => {
+          const key = item.email;
+          acc[key] = item;
           return acc;
         }, {})
       );
