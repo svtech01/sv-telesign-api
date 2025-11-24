@@ -128,13 +128,19 @@ export const dbService = {
         let { error: phoneError } = await supabase
           .from("contacts")
           .upsert(contactsData, { onConflict: "phone_number" });
-        if (phoneError) throw phoneError;
+        if (phoneError){
+          console.log("Phone upsert error:", phoneError);
+          throw phoneError;
+        }
 
         // Then upsert using email conflict
         let { error: emailError } = await supabase
           .from("contacts")
           .upsert(contactsData, { onConflict: "email" });
-        if (emailError) throw emailError;
+        if (emailError) {
+          console.log("Email upsert error:", emailError);
+          throw emailError;
+        }
 
         totalSaved += contactsData.length;
         console.log(`✅ Saved batch ${i / chunkSize + 1}: ${contactsData.length} contacts`);
