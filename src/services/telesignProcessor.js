@@ -41,12 +41,9 @@ export async function processCSV(filePath, options = {}) {
 
     console.log(`🧩 Parsed ${data.length} rows from CSV`);
 
-    if(data.length > thresholdForBatching && batchSize == "all") {
-      console.log("⚠️ Large dataset detected. Switching to batch processing mode.");
-      batchSize = thresholdForBatching; // reset to default batch size
-    }
+    if(data.length < thresholdForBatching && batchSize == "all") {
 
-    if(batchSize == "all") {
+      console.log(" Processing all data without batching ", batchSize, thresholdForBatching);
 
       let processor = await processCSVAll(data, {...options, concurrency});
 
@@ -56,6 +53,8 @@ export async function processCSV(filePath, options = {}) {
       }
 
     } else {
+
+      console.log(" Processing data with batching ", batchSize, thresholdForBatching, data.length);
 
       let processor = await processCSVWithBatching(data, {...options, concurrency, batchSize});
 
