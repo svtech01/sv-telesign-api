@@ -127,13 +127,13 @@ export const dbService = {
         // First upsert using phone_number conflict
         let { error: phoneError } = await supabase
           .from("contacts")
-          .upsert(uniqueResults, { onConflict: "phone_number" });
+          .upsert(contactsData, { onConflict: "phone_number" });
         if (phoneError) throw phoneError;
 
         // Then upsert using email conflict
         ({ error: emailError } = await supabase
           .from("contacts")
-          .upsert(uniqueResults, { onConflict: "email" }));
+          .upsert(contactsData, { onConflict: "email" }));
         if (emailError) throw emailError;
 
         totalSaved += contactsData.length;
