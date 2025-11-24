@@ -117,7 +117,7 @@ export const dbService = {
         // Batch upsert with conflict handling
         const { error } = await supabase
           .from(tableName)
-          .upsert(contactsData, { onConflict: "phone_number" });
+          .upsert(contactsData, { onConflict: ["phone_number", "email"] });
 
         if (error) throw error;
 

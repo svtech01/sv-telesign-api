@@ -16,12 +16,12 @@ import { dbService } from "./dbService.js";
  */
 export async function processCSV(filePath, options = {}) {
 
-  const thresholdForBatching = 100;
+  const thresholdForBatching = 1000;
 
   const {
     concurrency = 10,  // how many parallel requests
     delayMs = 200,     // optional delay between batches
-    batchSize = 100,     // how many rows per batch commit
+    batchSize = 1000,     // how many rows per batch commit
     mode = 'real',
     liveStatus = false,
     append = false
