@@ -1,6 +1,8 @@
 import fs from "fs";
 import csv from "csv-parser";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { CHECKPOINTS } from "../config/checkpoints.js";
+
 
 // Define header mapping
 const SEAMLESS_MAPPING = {
@@ -69,6 +71,11 @@ export function sanitizeRow(row) {
     return acc;
   }, {});
 
+  // STEP 1 — Apply all checkpoints (country, state, email, etc.)
+  // const checkpointResult = applyCheckpoints(lowerKeys);
+  // if (!checkpointResult.passed) return null;
+
+  // STEP 2 — Apply standard seamless mapping
   // Generic mapper based on SEAMLESS_MAPPING
   const mapped = {};
   for (const [targetKey, possibleFields] of Object.entries(SEAMLESS_MAPPING)) {
@@ -80,6 +87,8 @@ export function sanitizeRow(row) {
       }
     }
   }
+
+  // Checkpoint mapper
 
   // Normalize and validate phone number
   const normalizedPhone = normalizePhone(mapped.phone_number);
@@ -106,4 +115,38 @@ export function normalizePhone(rawPhone, defaultRegion = "US") {
   const cleaned = rawPhone.replace(/[^\d+]/g, "");
   const parsed = parsePhoneNumberFromString(cleaned, defaultRegion);
   return parsed && parsed.isValid() ? parsed.number : null;
+}
+
+export function applyCheckpoints(lowerKeys) {
+  const collectedData = {};
+
+  for (const [checkpointName, checkpoint] of Object.entries(CHECKPOINTS)) {
+    const { mapping, validator, allowed } = checkpoint;
+    const extracted = {};
+
+    // Extract mapped data for each checkpoint group
+    for (const [targetKey, possibleFields] of Object.entries(mapping)) {
+      for (const field of possibleFields) {
+        const value = lowerKeys[field.toLowerCase()];
+        if (value) {
+          extracted[targetKey] = value.toString().trim();
+          break;
+        }
+      }
+    }
+
+    // Run validation logic
+    const passed = validator(extracted, allowed);
+
+    if (!passed) {
+      return { passed: false };
+    }
+
+    collectedData[checkpointName] = extracted;
+  }
+
+  return {
+    passed: true,
+    data: collectedData
+  };
 }
