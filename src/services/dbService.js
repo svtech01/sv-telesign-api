@@ -159,6 +159,7 @@ export const dbService = {
         api_valid: !!payload.api_valid,
         is_reachable: payload.is_reachable ?? null,
         is_roaming: payload.is_roaming ?? null,
+        env: payload.env || 'unknown'
       };
 
       const otherPayload = {

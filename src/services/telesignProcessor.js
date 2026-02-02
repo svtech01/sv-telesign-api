@@ -322,6 +322,7 @@ export async function validatePhoneRow(row, includeLiveStatus = false) {
     }
 
     await dbService.saveAuditLog({
+      env: 'live',
       api_service: "phoneIdLookup",
       phone_e164: phoneE164,
       phone_international: row.international_format || "",
@@ -366,6 +367,7 @@ export async function validatePhoneRow(row, includeLiveStatus = false) {
         console.warn(`Live status check error for ${phoneE164}:`, liveErr.message);
       }
       await dbService.saveAuditLog({
+        env: 'live',
         api_service: "phoneLiveStatus",
         phone_e164: phoneE164,
         phone_international: row.international_format || "",
@@ -449,6 +451,7 @@ export async function validatePhoneRowTest(row, includeLiveStatus = false) {
 
   // 🧩 4. Return structured result
   const data = {
+    env: 'test',
     phone_e164: phoneE164,
     phone_international: row.international_format || "",
     phone_national: row.national_format || "",
