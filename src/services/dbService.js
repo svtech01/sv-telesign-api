@@ -142,6 +142,56 @@ export const dbService = {
       console.error("❌ Error saving contacts:", error.message);
       return { success: false, message: error.message };
     }
+  },
+
+  async saveAuditLog(payload) {
+    try {
+
+      if(!payload?.api_service) {
+        return null;
+      }
+      
+      const item = {
+        api_service: payload.api_service,
+        api_status: payload.api_valid ? 200 : 400,
+        phone_e164: payload.phone_e164,
+        risk_level: payload.risk_level || 'unknown',
+        api_valid: !!payload.api_valid,
+        is_reachable: payload.is_reachable ?? null,
+        is_roaming: payload.is_roaming ?? null,
+      };
+
+      const otherPayload = {
+        first_name: payload.first_name || null,
+        last_name: payload.last_name || null,
+        email: payload.email || null,
+        company: payload.company || null,
+        title: payload.title || null,
+        website: payload.website || null,
+        linkedin_url: payload.linkedin_url || null,
+        roaming_country: payload.roaming_country || null,      
+        carrier: payload.carrier || null,        
+        phone_type: payload.phone_type || null,
+      }
+
+      console.log("Audit log: ", {...item, raw: otherPayload});
+      
+      const { data, error } = await supabase
+        .from("audit_logs")
+        .insert([{
+          ...item,
+          raw: otherPayload
+        }])
+        .select();
+
+      if (error) throw error;
+
+      return data;
+
+    } catch (err) {
+      console.log(`Database audit save error for ${result.phone_e164 || 'unknown'}: ${err.message}`);      
+      throw `Database audit save error for ${result.phone_e164 || 'unknown'}: ${err.message}`;
+    }
   }
 
 };

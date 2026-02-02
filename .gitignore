@@ -3,5 +3,8 @@ uploads/*
 downloads/*
 
 .env
+.env.production
+.env.local
+.env.development
 
 Tasks.md
