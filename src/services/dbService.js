@@ -1,4 +1,5 @@
 import { supabase } from "../config/db.js";
+import { startOfMonth, endOfMonth, subMonths } from "date-fns";
 
 const tableName = 'contacts'; //test_contacts for testing environment
 
@@ -128,7 +129,7 @@ export const dbService = {
         let { error: phoneError } = await supabase
           .from("contacts")
           .upsert(contactsData, { onConflict: "phone_number" });
-        if (phoneError){
+        if (phoneError) {
           console.log("Phone upsert error:", phoneError);
           throw phoneError;
         }
@@ -147,10 +148,10 @@ export const dbService = {
   async saveAuditLog(payload) {
     try {
 
-      if(!payload?.api_service) {
+      if (!payload?.api_service) {
         return null;
       }
-      
+
       const item = {
         api_service: payload.api_service,
         api_status: payload.api_valid ? 200 : 400,
@@ -170,13 +171,13 @@ export const dbService = {
         title: payload.title || null,
         website: payload.website || null,
         linkedin_url: payload.linkedin_url || null,
-        roaming_country: payload.roaming_country || null,      
-        carrier: payload.carrier || null,        
+        roaming_country: payload.roaming_country || null,
+        carrier: payload.carrier || null,
         phone_type: payload.phone_type || null,
       }
 
-      console.log("Audit log: ", {...item, raw: otherPayload});
-      
+      console.log("Audit log: ", { ...item, raw: otherPayload });
+
       const { data, error } = await supabase
         .from("audit_logs")
         .insert([{
@@ -190,23 +191,43 @@ export const dbService = {
       return data;
 
     } catch (err) {
-      console.log(`Database audit save error for ${result.phone_e164 || 'unknown'}: ${err.message}`);      
+      console.log(`Database audit save error for ${result.phone_e164 || 'unknown'}: ${err.message}`);
       throw `Database audit save error for ${result.phone_e164 || 'unknown'}: ${err.message}`;
     }
   },
 
-  async getCredits() {
+  async getCredits(monthOffset = 0) {
     try {
 
-      // Hard Caps
-      const standardMax = 90000;
-      const withLiveMax = 13250;
+      function getMonthlyRange(monthOffset = 0) {
+        const targetMonth = subMonths(new Date(), monthOffset);
+        const now = new Date();
+        const target = subMonths(now, monthOffset);
+
+        // Construct UTC boundaries manually
+        const from = new Date(Date.UTC(target.getFullYear(), target.getMonth(), 1, 0, 0, 0));
+        const to = new Date(Date.UTC(target.getFullYear(), target.getMonth() + 1, 0, 23, 59, 59));
+        
+        return {
+          from: from.toISOString(), 
+          to: to.toISOString(),
+          fnsFrom: startOfMonth(targetMonth).toISOString(),
+          fnsTo: endOfMonth(targetMonth).toISOString(),
+        };
+      }
+
+      // 🔒 Monthly hard caps
+      const standardMax = 90_000;
+      const withLiveMax = 13_250;
+
+      const { from, to } = getMonthlyRange(monthOffset);
 
       const { data, error } = await supabase
         .from("audit_logs")
-        .select('*')
+        .select("api_service, created_at")
         .eq("env", "live")
-        .select();
+        .gte("created_at", from)
+        .lte("created_at", to);
 
       if (error) throw error;
 
@@ -214,14 +235,17 @@ export const dbService = {
       const totalWithLive = data?.filter(r => r.api_service == "phoneIdLive").length;
 
       return {
+        monthOffset,
+        period: "monthly",
+        range: { from, to },
         hasEnoughCredits: totalStandard < standardMax && totalWithLive < withLiveMax,
         consumed: {
           standard: totalStandard,
           withLive: totalWithLive,
         },
         remaining: {
-          standard: standardMax - totalStandard,
-          withLive: withLiveMax - totalWithLive,
+          standard: Math.max(0, standardMax - totalStandard),
+          withLive: Math.max(0, withLiveMax - totalWithLive),
         },
         cap: {
           standardMax,
@@ -230,7 +254,7 @@ export const dbService = {
       }
 
     } catch (err) {
-      console.log(`Database audit get error: ${err.message}`);      
+      console.log(`Database audit get error: ${err.message}`);
       throw `Database audit get error: ${err.message}`;
     }
   }
