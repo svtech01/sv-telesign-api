@@ -193,6 +193,46 @@ export const dbService = {
       console.log(`Database audit save error for ${result.phone_e164 || 'unknown'}: ${err.message}`);      
       throw `Database audit save error for ${result.phone_e164 || 'unknown'}: ${err.message}`;
     }
+  },
+
+  async getCredits() {
+    try {
+
+      // Hard Caps
+      const standardMax = 90000;
+      const withLiveMax = 13250;
+
+      const { data, error } = await supabase
+        .from("audit_logs")
+        .select('*')
+        .eq("env", "live")
+        .select();
+
+      if (error) throw error;
+
+      const totalStandard = data?.filter(r => r.api_service == "phoneIdLookup").length;
+      const totalWithLive = data?.filter(r => r.api_service == "phoneIdLive").length;
+
+      return {
+        hasEnoughCredits: totalStandard < standardMax && totalWithLive < withLiveMax,
+        consumed: {
+          standard: totalStandard,
+          withLive: totalWithLive,
+        },
+        remaining: {
+          standard: standardMax - totalStandard,
+          withLive: withLiveMax - totalWithLive,
+        },
+        cap: {
+          standardMax,
+          withLiveMax
+        }
+      }
+
+    } catch (err) {
+      console.log(`Database audit get error: ${err.message}`);      
+      throw `Database audit get error: ${err.message}`;
+    }
   }
 
 };

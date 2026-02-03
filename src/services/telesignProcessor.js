@@ -29,12 +29,24 @@ export async function processCSV(filePath, options = {}) {
 
   try {
 
-    console.log("Validation Limit:", batchSize)
+    console.log("Validation Limit:", batchSize);
 
     const data = await parseCSV(filePath, {
       bucket: process.env.SUPABASE_STORAGE_BUCKET,
       isSupabase: true
     });
+
+    // Check Remaining Credits
+    const credits = await dbService.getCredits();
+    if(credits && !credits.hasEnoughCredits) {
+      throw new Error("Not enough Credits");
+    }
+
+    if(credits && credits.remaining) {      
+      if(data.length > credits.remaining?.standard || data.length > credits.remaining?.withLive) {
+        throw new Error("Uploaded file data exceeded the remaining credits");
+      }
+    }
 
     let results = [];
     let invalid = [];

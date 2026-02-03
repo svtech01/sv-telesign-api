@@ -5,6 +5,7 @@ import fs from "fs";
 // Utils and Services
 import { telesignService } from "../services/telesignService.js";
 import { processCSV } from "../services/telesignProcessor.js";
+import { dbService } from "../services/dbService.js";
 
 const router = express.Router();
 
@@ -71,6 +72,16 @@ router.post("/verify-otp", async (req, res) => {
     const result = await telesignService.verifyOtp(attempt.telesignReferenceId, code);
 
     res.json({ success: true, result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/credits", async (req, res) => {
+  try {
+    const credits = await dbService.getCredits();
+    res.json(credits);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
